@@ -12,15 +12,20 @@ class EnvHelperBase
 
     public function __construct()
     {
-        $this->client = new SecretsManagerClient([
-            'credentials' => [
-                'key' => config('dynamic-env.aws_key'),
-                'secret' => config('dynamic-env.aws_secret'),
-            ],
-            'version' => 'latest',
-            'region' => config('dynamic-env.aws_secret_region'),
-            'ForceOverwriteReplicaSecret' => true,
-        ]);
+        try {
+            $this->client = new SecretsManagerClient([
+                'credentials' => [
+                    'key' => config('dynamic-env.aws_key'),
+                    'secret' => config('dynamic-env.aws_secret'),
+                ],
+                'version' => 'latest',
+                'region' => config('dynamic-env.aws_secret_region'),
+                'ForceOverwriteReplicaSecret' => true,
+            ]);
+        }catch (\Exception $exception) {
+
+        }
+
     }
 
     protected function checkSecretExist(string $environment): bool

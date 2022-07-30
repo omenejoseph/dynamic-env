@@ -7,33 +7,56 @@ use Illuminate\Support\Env;
 
 class EnvPopulator extends EnvHelperBase
 {
+    protected string $tempEnvPath;
+    protected string $currentEnvPath;
+
     public function populate(string $environment, Command $command)
     {
         $exists = $this->checkSecretExist($environment);
 
         $suffix = config('dynamic-env.env-suffix');
-        $tempEnvPath = base_path(".env.$suffix");
-        $currentEnvPath = base_path('.env');
+        $this->tempEnvPath = base_path(".env.$suffix");
+        $this->currentEnvPath = base_path('.env');
 
         if (!$exists) {
             $command->info("Secrets do not exists for this environment");
         } else {
 
-            if (file_exists($tempEnvPath)) {
-                unlink($tempEnvPath);
-            }
-
-            $env = fopen(base_path('.env.sync'), 'w');
-
-            foreach ($this->fetchedSecrets as $key => $secret) {
-                fwrite($env, "{$key}={$secret}\n");
-            }
-
-            fclose($env);
-
-            copy($tempEnvPath, $currentEnvPath);
-
-            unlink($tempEnvPath);
+            $this->handleEnvPathPopulation();
         }
+    }
+
+    public function setFilePaths(string $current, string $temp): self
+    {
+        $this->currentEnvPath = $current;
+        $this->tempEnvPath = $temp;
+
+        return $this;
+    }
+
+    public function setFetchedSecrets(\stdClass $secrets): self
+    {
+        $this->fetchedSecrets = $secrets;
+
+        return $this;
+    }
+
+    public function handleEnvPathPopulation()
+    {
+        if (file_exists($this->tempEnvPath)) {
+            unlink($this->tempEnvPath);
+        }
+
+        $env = fopen($this->tempEnvPath, 'w');
+
+        foreach ($this->fetchedSecrets as $key => $secret) {
+            fwrite($env, "{$key}={$secret}\n");
+        }
+
+        fclose($env);
+
+        copy($this->tempEnvPath, $this->currentEnvPath);
+
+        unlink($this->tempEnvPath);
     }
 }
