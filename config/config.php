@@ -11,7 +11,6 @@ return [
     'aws_key' => env('AWS_ACCESS_KEY_ID'),
     'aws_secret' => env('AWS_SECRET_ACCESS_KEY'),
     'aws_secret_region' => env('AWS_SECRET_REGION'),
-    'aws_iam_role' => env('AWS_IAM_ARN'),
 
     /* Environments that you would be saving the envs to */
     'environments' => [
